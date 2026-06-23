@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.5" tiledversion="1.5.0" orientation="orthogonal" renderorder="right-down" width="1" height="1" tilewidth="3780" tileheight="2395" infinite="0" nextlayerid="9" nextobjectid="29">
+ <tileset firstgid="1" name="village" tilewidth="3780" tileheight="2395" tilecount="1" columns="1">
+  <image source="../img/village.jpg" width="3780" height="2395"/>
+ </tileset>
+ <layer id="1" name="块层 1" width="1" height="1" visible="0">
+  <data encoding="base64" compression="zlib">
+   eJxjZGBgAAAACAAC
+  </data>
+ </layer>
+ <imagelayer id="7" name="Image Layer 1">
+  <image source="../img/village.jpg" width="3780" height="2395"/>
+ </imagelayer>
+ <objectgroup id="2" name="road">
+  <object id="3" x="2760" y="651.879">
+   <polygon points="266.788,86.1818 631.879,273.091 784.848,401.212 714.788,620.606 520.606,611.394 244.121,756.727 708,920 752,1040 691.758,1108.48 619.879,1049.58 492.97,1008.24 294.909,855.758 181.455,968.242 32.4848,1192.61 201.697,1289.33 517.939,1415.27 565.939,1733.33 -132.485,1700.85 -453.576,1654.18 -620.485,1700.12 -772.727,1608.85 -760.848,1340.48 -844.848,1338.91 -909.212,1525.21 -1265.45,1560.97 -1417.7,1440.48 -1629.7,1361.09 -1753.82,1284.85 -2016.73,1473.09 -2253.82,1295.88 -2017.7,1186.3 -1902.79,940.364 -2292.36,719.515 -2619.14,779.027 -2187.38,559.992 -2222.35,473.346 -2560.36,320.032 -2739.33,28.6985 -2600.92,-260.964 -2425.41,-292.471 -2389.29,-181.553 -2520.08,-2.14252 -2497.81,100.35 -2410.83,211.395 -2167.17,312.273 -2055.95,402.712 -2008.36,656.788 -1540.36,975.758 -1424,928.242 -1229.21,976.485 -1000.12,1136.12 -760.364,1127.15 -468.727,929.818 -162.182,835.879 81.8182,765.576 187.758,701.939 367.394,597.697 417.455,393.818 159.273,264 -64.9697,269.697 -204.364,260.606 -239.273,152.485 -417.818,130.545 -667.03,210.061 -944.606,369.697 -1210.18,205.939 -1446.3,112.606 -1680,7.27273 -1844,-111.152 -2014.91,-250.424 -1878.91,-364.606 -1558.06,-170.061 -1282.97,-97.0303 -1044.12,-29.5758 -792,53.9394 -473.212,32.9697 -310.303,31.7576 -247.03,-29.4545 -301.939,-99.7576 -78.1818,-218.303 270.788,-446.182 636.606,-558.061 772.364,-390.182 410.424,-244.848 232.545,-67.2121"/>
+  </object>
+  <object id="23" x="2486.67" y="589.333">
+   <polygon points="0,0 -193.333,-277.333 28,-364 110.667,-96"/>
+  </object>
+  <object id="26" x="1541.33" y="296">
+   <polygon points="0,0 468,-228 573.333,-124 129.333,110.667"/>
+  </object>
+  <object id="27" x="1896" y="293.333">
+   <polygon points="0,0 22.6667,141.333 168,76 208,72 346.667,-76 161.333,-149.333 -22.6667,-44"/>
+  </object>
+  <object id="28" x="2102.67" y="353.333">
+   <polygon points="0,0 49.3333,117.333 132,149.333 244,69.3333 236,-60 366.667,-102.667 284,-236 100,-142.667"/>
+  </object>
+ </objectgroup>
+ <objectgroup id="3" name="elder">
+  <object id="7" name="elder3" x="520" y="952">
+   <point/>
+  </object>
+  <object id="8" name="elder2" x="844" y="1760">
+   <point/>
+  </object>
+  <object id="9" name="elder1" x="2408" y="1564">
+   <point/>
+  </object>
+  <object id="17" name="elder4" x="2908" y="2204">
+   <point/>
+  </object>
+ </objectgroup>
+ <objectgroup id="4" name="actor">
+  <object id="18" name="sun" x="2706.78" y="560.664">
+   <point/>
+  </object>
+  <object id="19" name="tang" x="2152" y="1892">
+   <point/>
+  </object>
+ </objectgroup>
+ <objectgroup id="5" name="child">
+  <object id="10" name="boy1" x="3228" y="1576">
+   <point/>
+  </object>
+  <object id="11" name="girl2" x="3268" y="1648">
+   <point/>
+  </object>
+  <object id="12" name="girl1" x="3400" y="1588">
+   <point/>
+  </object>
+  <object id="14" name="boy2" x="3018.15" y="285.727">
+   <point/>
+  </object>
+  <object id="15" name="girl3" x="2985" y="352">
+   <point/>
+  </object>
+ </objectgroup>
+ <objectgroup id="6" name="god">
+  <object id="13" name="god" x="2824.61" y="791.545">
+   <point/>
+  </object>
+ </objectgroup>
+</map>

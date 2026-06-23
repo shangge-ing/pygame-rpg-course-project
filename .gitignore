@@ -1,0 +1,39 @@
+.venv/
+venv/
+env/
+
+__pycache__/
+*.py[cod]
+*$py.class
+
+.idea/
+.vscode/
+.DS_Store
+desktop.ini
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp
+
+build/
+dist/
+*.egg-info/
+
+# Local assistant/tooling state
+.agents/
+.codex/
+
+# Local backups and installers, not required to run the project
+resource.zip
+*.zip
+*.msi
+ppt/
+journey to the west/

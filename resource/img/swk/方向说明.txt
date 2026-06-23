@@ -1,0 +1,4 @@
+00down
+01left
+03right
+02 top

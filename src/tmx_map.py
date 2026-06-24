@@ -60,6 +60,27 @@ class TmxMap:
                 return float(obj.x), float(obj.y)
         return default
 
+    def get_objects(self, layer_names):
+        """批量读取若干对象层，返回 NPC 等系统可用的字典列表。"""
+        objects = []
+        for layer_name in layer_names:
+            try:
+                layer = self.tmx_data.get_layer_by_name(layer_name)
+            except ValueError:
+                continue
+            for obj in layer:
+                objects.append(
+                    {
+                        "layer": layer_name,
+                        "name": getattr(obj, "name", "") or layer_name,
+                        "x": float(getattr(obj, "x", 0) or 0),
+                        "y": float(getattr(obj, "y", 0) or 0),
+                        "width": float(getattr(obj, "width", 0) or 0),
+                        "height": float(getattr(obj, "height", 0) or 0),
+                    }
+                )
+        return objects
+
     def get_object_rects(self, layer_name):
         """读取对象层并转换为 pygame.Rect，用于碰撞检测。"""
         try:

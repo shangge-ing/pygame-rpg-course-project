@@ -30,7 +30,6 @@ dist/
 # Local assistant/tooling state
 .agents/
 .codex/
-CLAUDE_HANDOFF.md
 
 # Local backups and installers, not required to run the project
 resource.zip

@@ -1,5 +1,3 @@
-"""玩家模块：显示孙悟空并处理移动、动画和碰撞。"""
-
 from pathlib import Path
 
 import pygame
@@ -8,8 +6,9 @@ from .settings import PLAYER_HITBOX_SIZE, PLAYER_SCALE, PLAYER_SPEED
 
 
 class Player(pygame.sprite.Sprite):
-    """基础版孙悟空角色。"""
+    """玩家角色孙悟空，负责图片动画、移动、碰撞和绘制。"""
 
+    # `resource/img/swk` 中按方向命名的行走帧。
     FRAME_NAMES = {
         "down": ["00000.tga", "00001.tga", "00002.tga", "00003.tga"],
         "left": ["01000.tga", "01001.tga", "01002.tga", "01003.tga"],
@@ -18,6 +17,7 @@ class Player(pygame.sprite.Sprite):
     }
 
     def __init__(self, image_dir, spawn):
+        """创建玩家并把玩家放到地图出生点。"""
         super().__init__()
         self.position = pygame.Vector2(spawn)
         self.direction = "down"
@@ -31,7 +31,7 @@ class Player(pygame.sprite.Sprite):
         self.hitbox = self._make_hitbox()
 
     def _load_frames(self, image_dir):
-        """加载四方向行走帧，失败时使用占位图。"""
+        """加载四个方向的行走动画；失败时使用红色占位图保证游戏可运行。"""
         try:
             frames = {}
             for direction, names in self.FRAME_NAMES.items():
@@ -39,11 +39,9 @@ class Player(pygame.sprite.Sprite):
                 for name in names:
                     image = pygame.image.load(image_dir / name).convert_alpha()
                     if PLAYER_SCALE != 1:
-                        size = (
-                            max(1, int(image.get_width() * PLAYER_SCALE)),
-                            max(1, int(image.get_height() * PLAYER_SCALE)),
-                        )
-                        image = pygame.transform.smoothscale(image, size)
+                        width = max(1, int(image.get_width() * PLAYER_SCALE))
+                        height = max(1, int(image.get_height() * PLAYER_SCALE))
+                        image = pygame.transform.smoothscale(image, (width, height))
                     loaded.append(image)
                 frames[direction] = loaded
             return frames
@@ -55,8 +53,9 @@ class Player(pygame.sprite.Sprite):
             return {direction: [placeholder] for direction in self.FRAME_NAMES}
 
     def update(self, dt, keys, map_size, obstacle_rects):
-        """根据方向键移动玩家，并处理碰撞和边界。"""
+        """根据键盘方向键更新玩家位置，并处理障碍物和地图边界碰撞。"""
         movement = pygame.Vector2(0, 0)
+
         if keys[pygame.K_LEFT]:
             movement.x -= 1
             self.direction = "left"
@@ -85,21 +84,27 @@ class Player(pygame.sprite.Sprite):
         self.hitbox = self._make_hitbox()
 
     def _move_axis(self, dx, dy, map_size, obstacle_rects):
-        """按单轴移动，撞到障碍物就回退。"""
+        """按单个轴尝试移动，碰撞时回退到移动前位置。"""
         if dx == 0 and dy == 0:
             return
+
         old_position = self.position.copy()
         self.position.x += dx
         self.position.y += dy
         self.hitbox = self._make_hitbox()
         self._clamp_hitbox_to_map(map_size)
         self.hitbox = self._make_hitbox()
-        if any(self.hitbox.colliderect(rect) for rect in obstacle_rects):
+
+        if self._collides(obstacle_rects):
             self.position = old_position
             self.hitbox = self._make_hitbox()
 
+    def _collides(self, obstacle_rects):
+        """判断玩家 hitbox 是否碰到任意障碍物矩形。"""
+        return any(self.hitbox.colliderect(rect) for rect in obstacle_rects)
+
     def _animate(self, dt):
-        """移动时循环播放当前方向动画。"""
+        """玩家移动时循环播放当前方向的行走帧。"""
         frames = self.frames[self.direction]
         self.animation_time += dt
         if self.animation_time >= 0.12:
@@ -107,7 +112,7 @@ class Player(pygame.sprite.Sprite):
             self.frame_index = (self.frame_index + 1) % len(frames)
 
     def _make_hitbox(self):
-        """用脚下小矩形作为碰撞范围。"""
+        """生成玩家脚下的碰撞矩形，避免整张图片过大导致碰撞不自然。"""
         width, height = PLAYER_HITBOX_SIZE
         hitbox = pygame.Rect(0, 0, width, height)
         hitbox.centerx = round(self.position.x)
@@ -115,21 +120,24 @@ class Player(pygame.sprite.Sprite):
         return hitbox
 
     def _clamp_hitbox_to_map(self, map_size):
-        """限制玩家不能走出地图。"""
+        """把玩家限制在地图像素范围内，防止走出地图边界。"""
         map_width, map_height = map_size
         shift_x = 0
         shift_y = 0
+
         if self.hitbox.left < 0:
             shift_x = -self.hitbox.left
         elif self.hitbox.right > map_width:
             shift_x = map_width - self.hitbox.right
+
         if self.hitbox.top < 0:
             shift_y = -self.hitbox.top
         elif self.hitbox.bottom > map_height:
             shift_y = map_height - self.hitbox.bottom
+
         self.position.x += shift_x
         self.position.y += shift_y
 
     def draw(self, surface, camera):
-        """按摄像机偏移绘制玩家。"""
+        """按摄像机偏移把玩家绘制到屏幕上。"""
         surface.blit(self.image, camera.apply_rect(self.rect))

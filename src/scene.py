@@ -21,7 +21,7 @@ Scene 把一张地图和它上面的 NPC、怪物、Boss、出生点组织在一
 
 
 class Scene:
-    """一个可探索场景，例如村庄、郊外或寺庙。"""
+    """一个可探索场景，例如村庄、郊外、森林或寺庙。"""
 
     def __init__(self, name, map_path, default_spawn, npc_layers=(), monster_layers=()):
         """加载地图、读取玩家出生点，并按对象层创建 NPC 和怪物。"""
@@ -47,9 +47,15 @@ class Scene:
 
     @classmethod
     def outskirts(cls, map_path, default_spawn):
-        """创建郊外过渡场景：用于村庄和寺庙之间的连接。"""
-        # 过渡场景：scene.tmx 只有瓦片装饰层，没有 NPC / 怪物 / 障碍层，整图可走。
+        """创建郊外过渡场景：用于村庄和森林之间的连接。"""
+        # 原郊外场景：scene.tmx 使用瓦片地图，作为村庄和森林之间的连接。
         return cls("outskirts", map_path, default_spawn)
+
+    @classmethod
+    def forest(cls, map_path, default_spawn):
+        """创建森林过渡场景：位于郊外和寺庙之间。"""
+        # 新森林场景：forest.tmx 使用郊外.jpg 整图背景，整图可走。
+        return cls("forest", map_path, default_spawn)
 
     @classmethod
     def temple(cls, map_path, default_spawn):

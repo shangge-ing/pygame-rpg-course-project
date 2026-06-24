@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.8" tiledversion="1.8.6" orientation="orthogonal" renderorder="right-down" width="1" height="1" tilewidth="1000" tileheight="600" infinite="0" nextlayerid="3" nextobjectid="2">
+ <tileset firstgid="1" name="forest" tilewidth="1000" tileheight="600" tilecount="1" columns="1">
+  <image source="../img/郊外.jpg" width="1000" height="600"/>
+ </tileset>
+ <layer id="1" name="Ground" width="1" height="1">
+  <data encoding="csv">
+1
+</data>
+ </layer>
+ <objectgroup id="2" name="actor">
+  <object id="1" name="sun" x="96" y="384">
+   <point/>
+  </object>
+ </objectgroup>
+</map>

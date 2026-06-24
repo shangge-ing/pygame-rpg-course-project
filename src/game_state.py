@@ -9,6 +9,7 @@ class GameState(Enum):
     PAUSED = auto()
     VILLAGE_EXPLORING = auto()
     OUTSKIRTS_EXPLORING = auto()
+    FOREST_EXPLORING = auto()
     TEMPLE_EXPLORING = auto()
     BATTLE = auto()
     BATTLE_VICTORY = auto()

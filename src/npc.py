@@ -2,8 +2,12 @@ import pygame
 
 from .animation import Animation
 from .settings import (
+    CHILD_DIR,
+    CHILD_SPRITE_HEIGHT,
     ELDER_DIR,
     GOD_DIR,
+    GOD_PATROL_RADIUS,
+    GOD_PATROL_SPEED,
     NPC_IDLE_FRAME_LIMIT,
     NPC_IDLE_FRAME_TIME,
     NPC_INTERACTION_PADDING,
@@ -12,6 +16,14 @@ from .settings import (
 
 class NPC:
     """村庄 NPC：保存位置、显示图片、待机动画和对话内容。"""
+
+    CHILD_IMAGE_ORDER = ("boy1", "boy2", "girl1", "girl2", "girl3")
+    GOD_DIRECTION_PREFIXES = {
+        "down": "000",
+        "left": "010",
+        "up": "020",
+        "right": "030",
+    }
 
     # 按图层的兜底对话（找不到具体角色台词时使用）。
     DIALOGS = {
@@ -40,6 +52,10 @@ class NPC:
         self.layer_name = layer_name
         self.object_name = object_name
         self.position = pygame.Vector2(position)
+        self.home_position = pygame.Vector2(position)
+        self.patrol_target_index = 0
+        self.facing = "down"
+        self.direction_animations = {}
         self.display_name, self.dialog_text = self._resolve_dialog(layer_name, object_name)
         self.load_error = None
         self.animation_error = None
@@ -59,6 +75,11 @@ class NPC:
 
     def _load_animation(self):
         """加载 NPC 待机动画；没有多帧资源时退回静态图片。"""
+        if self.layer_name == "god":
+            self.direction_animations = self._load_god_direction_animations()
+            if self.direction_animations:
+                return self.direction_animations.get(self.facing) or next(iter(self.direction_animations.values()))
+
         frame_paths = self._animation_paths()
         if not frame_paths:
             return Animation([self._load_static_image()], NPC_IDLE_FRAME_TIME)
@@ -77,6 +98,24 @@ class NPC:
         self.frame_paths = frame_paths[: len(frames)]
         return Animation(frames, NPC_IDLE_FRAME_TIME)
 
+    def _load_god_direction_animations(self):
+        """加载土地公四方向帧，移动时根据方向切换动画。"""
+        animations = {}
+        loaded_paths = []
+        try:
+            for direction, prefix in self.GOD_DIRECTION_PREFIXES.items():
+                paths = sorted(GOD_DIR.glob(f"0214-16505471-{prefix}*.tga"))[:NPC_IDLE_FRAME_LIMIT]
+                frames = [pygame.image.load(path).convert_alpha() for path in paths]
+                if frames:
+                    animations[direction] = Animation(frames, NPC_IDLE_FRAME_TIME)
+                    loaded_paths.extend(paths)
+        except Exception as exc:
+            self.animation_error = str(exc)
+            return {}
+
+        self.frame_paths = loaded_paths
+        return animations
+
     def _animation_paths(self):
         """按 NPC 类型和对象名寻找对应的待机动画帧。"""
         if self.layer_name == "god":
@@ -88,15 +127,15 @@ class NPC:
         return []
 
     def _load_static_image(self):
-        """加载单帧 NPC 图片；孩童没有素材时使用代码绘制形象。"""
+        """加载单帧 NPC 图片；孩童优先使用 resource/img/child 中的新素材。"""
         image_path = self._image_path()
-        if image_path is None and self.layer_name == "child":
-            return self._child_image()
-
         try:
             if image_path is None:
                 raise FileNotFoundError(f"no configured image for {self.layer_name}:{self.object_name}")
-            return pygame.image.load(image_path).convert_alpha()
+            image = pygame.image.load(image_path).convert_alpha()
+            if self.layer_name == "child":
+                image = self._prepare_child_sprite(image)
+            return image
         except Exception as exc:
             self.load_error = str(exc)
             return self._placeholder_image()
@@ -111,23 +150,58 @@ class NPC:
             if path.exists():
                 return path
 
+        if self.layer_name == "child":
+            child_paths = sorted(
+                path
+                for pattern in ("*.png", "*.jpg", "*.jpeg", "*.tga")
+                for path in CHILD_DIR.glob(pattern)
+                if path.is_file()
+            )
+            if not child_paths:
+                return None
+            try:
+                index = self.CHILD_IMAGE_ORDER.index(self.object_name)
+            except ValueError:
+                index = 0
+            return child_paths[index % len(child_paths)]
+
         return None
 
-    def _child_image(self):
-        """用 pygame 绘制简单孩童形象，避免孩童 NPC 只是普通矩形。"""
-        image = pygame.Surface((40, 58), pygame.SRCALPHA)
-        pygame.draw.ellipse(image, (245, 205, 150), (9, 2, 22, 22))
-        pygame.draw.arc(image, (65, 45, 35), (8, 0, 24, 18), 3.2, 6.1, 3)
-        pygame.draw.circle(image, (45, 35, 30), (16, 13), 2)
-        pygame.draw.circle(image, (45, 35, 30), (24, 13), 2)
-        pygame.draw.arc(image, (130, 64, 50), (15, 12, 10, 7), 0.2, 2.9, 1)
-        pygame.draw.polygon(image, (92, 178, 118), [(12, 25), (28, 25), (34, 50), (6, 50)])
-        pygame.draw.line(image, (235, 220, 150), (20, 27), (20, 48), 2)
-        pygame.draw.rect(image, (70, 95, 135), (11, 49, 7, 8))
-        pygame.draw.rect(image, (70, 95, 135), (22, 49, 7, 8))
-        pygame.draw.line(image, (80, 55, 40), (18, 57), (14, 57), 2)
-        pygame.draw.line(image, (80, 55, 40), (26, 57), (30, 57), 2)
+    def _prepare_child_sprite(self, image):
+        """Remove the generated checkerboard background, crop blank space, and scale."""
+        image = self._remove_checker_background(image)
+        rect = image.get_bounding_rect(min_alpha=8)
+        if rect.width > 0 and rect.height > 0:
+            image = image.subsurface(rect).copy()
+
+        if image.get_height() > CHILD_SPRITE_HEIGHT:
+            scale = CHILD_SPRITE_HEIGHT / image.get_height()
+            size = (max(1, int(image.get_width() * scale)), CHILD_SPRITE_HEIGHT)
+            image = pygame.transform.smoothscale(image, size)
         return image
+
+    def _remove_checker_background(self, image):
+        """Treat the light checkerboard export background as transparent."""
+        image = image.copy()
+        width, height = image.get_size()
+        for y in range(height):
+            for x in range(width):
+                color = image.get_at((x, y))
+                if self._is_checker_background(color):
+                    image.set_at((x, y), (color.r, color.g, color.b, 0))
+        return image
+
+    @staticmethod
+    def _is_checker_background(color):
+        """Detect the bright grey/white checkerboard around generated child images."""
+        return (
+            color.r >= 222
+            and color.g >= 222
+            and color.b >= 222
+            and abs(color.r - color.g) <= 10
+            and abs(color.r - color.b) <= 10
+            and abs(color.g - color.b) <= 10
+        )
 
     def _placeholder_image(self):
         """资源加载失败时使用彩色占位图，保证 NPC 仍然可见。"""
@@ -145,6 +219,7 @@ class NPC:
         """把 NPC 移到新的落脚点，通常用于修正站在障碍物中的对象。"""
         # 把 NPC 移到新的落脚点（用于把站在障碍里的 NPC 挪到可走处）。
         self.position = pygame.Vector2(position)
+        self.home_position = pygame.Vector2(position)
         self.base_rect = self.image.get_rect(midbottom=self.position)
         self.rect = self.base_rect.copy()
 
@@ -154,10 +229,65 @@ class NPC:
         return self.base_rect.inflate(NPC_INTERACTION_PADDING, NPC_INTERACTION_PADDING)
 
     def update(self, dt):
-        """更新 NPC 待机动画，不改变世界坐标和交互范围。"""
+        """更新 NPC 待机动画和少量巡逻移动。"""
         self.animation.update(dt)
+        self._update_patrol(dt)
         self.image = self.animation.current_frame
         self.rect = self.image.get_rect(midbottom=self.position)
+        self.base_rect = self.rect.copy()
+
+    def _update_patrol(self, dt):
+        """让土地公在出生点附近按小方形路线巡逻，其他 NPC 保持原地。"""
+        if self.layer_name != "god" or GOD_PATROL_RADIUS <= 0 or GOD_PATROL_SPEED <= 0:
+            return
+
+        patrol_points = self._god_patrol_points()
+        target = patrol_points[self.patrol_target_index]
+        to_target = target - self.position
+        step = GOD_PATROL_SPEED * dt
+
+        if to_target.length() <= step:
+            self.position.update(target)
+            self.patrol_target_index = (self.patrol_target_index + 1) % len(patrol_points)
+            next_delta = patrol_points[self.patrol_target_index] - self.position
+            self._set_facing_from_motion(next_delta)
+            return
+
+        movement = to_target.normalize() * step
+        self.position += movement
+        self._set_facing_from_motion(movement)
+
+    def _god_patrol_points(self):
+        """返回土地公围绕出生点移动的一圈目标点。"""
+        radius = GOD_PATROL_RADIUS
+        home = self.home_position
+        return [
+            pygame.Vector2(home.x + radius, home.y),
+            pygame.Vector2(home.x + radius, home.y + radius),
+            pygame.Vector2(home.x - radius, home.y + radius),
+            pygame.Vector2(home.x - radius, home.y - radius),
+            pygame.Vector2(home.x + radius, home.y - radius),
+        ]
+
+    def _set_facing_from_motion(self, motion):
+        """根据本帧移动方向选择土地公朝向。"""
+        if motion.length_squared() == 0:
+            return
+
+        if abs(motion.x) >= abs(motion.y):
+            direction = "right" if motion.x > 0 else "left"
+        else:
+            direction = "down" if motion.y > 0 else "up"
+        self._set_facing(direction)
+
+    def _set_facing(self, direction):
+        """切换到指定方向动画，缺帧时保持当前动画。"""
+        if direction == self.facing or direction not in self.direction_animations:
+            return
+
+        self.facing = direction
+        self.animation = self.direction_animations[direction]
+        self.animation.reset()
 
     def draw(self, surface, camera):
         """按摄像机偏移绘制 NPC。"""

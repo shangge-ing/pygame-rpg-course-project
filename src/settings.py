@@ -11,9 +11,10 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 RESOURCE_DIR = BASE_DIR / "resource"
 
-# 三张主要地图：村庄、郊外、寺庙。TEMPLE_FALLBACK_MAP_PATH 是寺庙备用地图。
+# 四张主要地图：村庄、郊外、森林、寺庙。TEMPLE_FALLBACK_MAP_PATH 是寺庙备用地图。
 VILLAGE_MAP_PATH = RESOURCE_DIR / "tmx" / "village1.tmx"
 OUTSKIRTS_MAP_PATH = RESOURCE_DIR / "tmx" / "scene.tmx"
+FOREST_MAP_PATH = RESOURCE_DIR / "tmx" / "forest.tmx"
 TEMPLE_MAP_PATH = RESOURCE_DIR / "tmx" / "temple1.tmx"
 TEMPLE_FALLBACK_MAP_PATH = RESOURCE_DIR / "tmx" / "temple.tmx"
 MAP_PATH = VILLAGE_MAP_PATH
@@ -23,6 +24,7 @@ SWK_DIR = RESOURCE_DIR / "img" / "swk"
 SWK2_DIR = RESOURCE_DIR / "img" / "swk2"
 ELDER_DIR = RESOURCE_DIR / "img" / "elder"
 GOD_DIR = RESOURCE_DIR / "img" / "god"
+CHILD_DIR = RESOURCE_DIR / "img" / "child"
 CATTLE_IMAGE_PATH = RESOURCE_DIR / "img" / "cattle" / "station" / "1644-a85e8726-00000.tga"
 CATTLE_BACK_DIR = RESOURCE_DIR / "img" / "cattle" / "back"
 CATTLE_STATION_DIR = RESOURCE_DIR / "img" / "cattle" / "station"
@@ -61,6 +63,7 @@ PLAYER_SCALE = 0.5
 PLAYER_HITBOX_SIZE = (32, 28)
 DEFAULT_PLAYER_SPAWN = (400, 300)
 DEFAULT_OUTSKIRTS_SPAWN = (96, 384)
+DEFAULT_FOREST_SPAWN = (96, 384)
 OUTSKIRTS_EXIT_BAND = 96
 DEFAULT_TEMPLE_SPAWN = (300, 900)
 
@@ -69,6 +72,9 @@ NPC_INTERACTION_PADDING = 40
 NPC_LAYERS = ("god", "elder", "child")
 NPC_IDLE_FRAME_LIMIT = 10
 NPC_IDLE_FRAME_TIME = 0.2
+CHILD_SPRITE_HEIGHT = 72
+GOD_PATROL_RADIUS = 36
+GOD_PATROL_SPEED = 24
 
 # 怪物探索状态、巡逻、追击和动画参数。
 MONSTER_LAYERS = ("monster",)

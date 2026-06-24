@@ -4,7 +4,7 @@
 
 ## 游戏内容
 
-- 探索村庄、郊外和观音院三个场景
+- 探索村庄、郊外、森林和观音院四个场景
 - 与土地公、老人、孩童等 NPC 对话
 - 接取主线任务并前往观音院
 - 与牛怪小怪战斗
@@ -57,6 +57,7 @@ python main.py
 -> 村庄
 -> 与土地公对话
 -> 前往郊外
+-> 穿过森林
 -> 进入观音院
 -> 击败小怪
 -> 挑战牛魔王
@@ -108,7 +109,9 @@ project-root/
 
 - `resource/tmx/village1.tmx`
 - `resource/tmx/scene.tmx`
+- `resource/tmx/forest.tmx`
 - `resource/tmx/temple1.tmx`
+- `resource/img/郊外.jpg`
 - `resource/img/swk`
 - `resource/img/swk2`
 - `resource/img/god`

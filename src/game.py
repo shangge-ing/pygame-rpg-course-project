@@ -1,7 +1,7 @@
 """游戏主控制模块。
 
 Game 是整个项目的调度中心：初始化 pygame 和各类资源，管理当前游戏状态，
-处理键盘输入，切换村庄/郊外/寺庙场景，触发 NPC 对话、战斗、Boss 和最终完成界面。
+处理键盘输入，切换村庄/郊外/森林/寺庙场景，触发 NPC 对话、战斗、Boss 和最终完成界面。
 其他模块负责具体对象行为，Game 负责把它们串成完整流程。
 """
 
@@ -20,9 +20,11 @@ from .settings import (
     ATTACK_SOUND_PATH,
     BACKGROUND_MUSIC_PATH,
     BOSS_BANNER_SECONDS,
+    DEFAULT_FOREST_SPAWN,
     DEFAULT_OUTSKIRTS_SPAWN,
     DEFAULT_PLAYER_SPAWN,
     DEFAULT_TEMPLE_SPAWN,
+    FOREST_MAP_PATH,
     FONT_PATH,
     FPS,
     FAIL_IMAGE_PATH,
@@ -130,6 +132,10 @@ class Game:
     def _create_outskirts_scene(self):
         """创建郊外过渡场景。"""
         return Scene.outskirts(OUTSKIRTS_MAP_PATH, DEFAULT_OUTSKIRTS_SPAWN)
+
+    def _create_forest_scene(self):
+        """创建森林过渡场景。"""
+        return Scene.forest(FOREST_MAP_PATH, DEFAULT_FOREST_SPAWN)
 
     def _create_temple_scene(self):
         """创建寺庙场景，temple1.tmx 失败时退回 temple.tmx。"""
@@ -327,12 +333,20 @@ class Game:
             self._return_to_village()
             return
 
-        if self._can_leave_temple():
+        if self._can_return_to_outskirts():
             self._return_to_outskirts()
+            return
+
+        if self._can_leave_temple():
+            self._return_to_forest()
             return
 
         if self._can_enter_outskirts():
             self._enter_outskirts()
+            return
+
+        if self._can_enter_forest():
+            self._enter_forest()
             return
 
         if self._can_enter_temple():
@@ -355,9 +369,9 @@ class Game:
             self.complete_message_visible = True
             self._sync_state()
 
-    # --- 三场景连接：村庄 <-> 郊外 <-> 观音院 ---
-    # 正向：村庄(土地公)-> 郊外(左侧出生,向右)-> 观音院
-    # 返程：观音院(妖王已除)-> 郊外(右侧出生,向左)-> 村庄复命
+    # --- 四场景连接：村庄 <-> 郊外 <-> 森林 <-> 观音院 ---
+    # 正向：村庄(土地公)-> 原郊外(向右)-> 森林(向右)-> 观音院
+    # 返程：观音院(妖王已除)-> 森林(向左)-> 原郊外(向左)-> 村庄复命
     # 郊外左右出口按任务阶段区分方向，避免来回误触发。
 
     def _can_enter_outskirts(self):
@@ -366,20 +380,36 @@ class Game:
             return False
         return self._is_temple_gate_npc(self._nearby_npc())
 
-    def _can_enter_temple(self):
-        """是否可以从郊外右侧出口进入寺庙。"""
+    def _can_enter_forest(self):
+        """是否可以从原郊外右侧出口进入森林。"""
         return (
             self.scene.name == "outskirts"
             and self.quest.stage == QuestStage.ACCEPTED
             and self.player.hitbox.colliderect(self._outskirts_right_exit_rect())
         )
 
+    def _can_enter_temple(self):
+        """是否可以从森林右侧出口进入寺庙。"""
+        return (
+            self.scene.name == "forest"
+            and self.quest.stage == QuestStage.ACCEPTED
+            and self.player.hitbox.colliderect(self._outskirts_right_exit_rect())
+        )
+
     def _can_leave_temple(self):
-        """是否可以从寺庙返回郊外，只有清怪后才允许。"""
+        """是否可以从寺庙返回森林，只有清怪后才允许。"""
         return self.scene.name == "temple" and self.quest.should_return_to_village
 
+    def _can_return_to_outskirts(self):
+        """是否可以从森林左侧出口返回原郊外。"""
+        return (
+            self.scene.name == "forest"
+            and self.quest.stage == QuestStage.CLEARED
+            and self.player.hitbox.colliderect(self._outskirts_left_exit_rect())
+        )
+
     def _can_return_to_village(self):
-        """是否可以从郊外左侧出口回村复命。"""
+        """是否可以从原郊外左侧出口回村复命。"""
         return (
             self.scene.name == "outskirts"
             and self.quest.stage == QuestStage.CLEARED
@@ -414,15 +444,30 @@ class Game:
             print(f"Player image load failed, using placeholder: {self.player.load_error}")
 
     def _enter_outskirts(self):
-        """从村庄进入郊外。"""
+        """从村庄进入原郊外。"""
         self._enter_scene(
             self._create_outskirts_scene(),
             DEFAULT_OUTSKIRTS_SPAWN,
             GameState.OUTSKIRTS_EXPLORING,
         )
 
+    def _enter_forest(self):
+        """从原郊外进入森林。"""
+        self._enter_scene(
+            self._create_forest_scene(),
+            DEFAULT_FOREST_SPAWN,
+            GameState.FOREST_EXPLORING,
+        )
+
+    def _return_to_forest(self):
+        """从寺庙返回森林，并把玩家放到森林右侧附近。"""
+        scene = self._create_forest_scene()
+        map_width, map_height = scene.pixel_size
+        spawn = (map_width - OUTSKIRTS_EXIT_BAND - 64, map_height // 2)
+        self._enter_scene(scene, spawn, GameState.FOREST_EXPLORING)
+
     def _return_to_outskirts(self):
-        """从寺庙返回郊外，并把玩家放到郊外右侧附近。"""
+        """从森林返回原郊外，并把玩家放到原郊外右侧附近。"""
         scene = self._create_outskirts_scene()
         map_width, map_height = scene.pixel_size
         spawn = (map_width - OUTSKIRTS_EXIT_BAND - 64, map_height // 2)
@@ -570,6 +615,8 @@ class Game:
             self.state = GameState.VILLAGE_EXPLORING
         elif self.scene.name == "outskirts":
             self.state = GameState.OUTSKIRTS_EXPLORING
+        elif self.scene.name == "forest":
+            self.state = GameState.FOREST_EXPLORING
         else:
             self.state = GameState.TEMPLE_EXPLORING
 
@@ -600,11 +647,15 @@ class Game:
         if self.battle:
             self.battle.draw(self.screen)
         if self._can_enter_outskirts():
-            self.ui.draw_temple_prompt(self.screen, "按 E / 空格 出村前往观音院")
+            self.ui.draw_temple_prompt(self.screen, "按 E / 空格 出村前往郊外")
+        if self._can_enter_forest():
+            self.ui.draw_temple_prompt(self.screen, "按 E / 空格 穿过郊外")
         if self._can_enter_temple():
             self.ui.draw_temple_prompt(self.screen)
         if self._can_leave_temple():
             self.ui.draw_return_prompt(self.screen, "妖王已除，按 E / 空格 踏上归途")
+        if self._can_return_to_outskirts():
+            self.ui.draw_return_prompt(self.screen, "按 E / 空格 返回郊外小路")
         if self._can_return_to_village():
             self.ui.draw_return_prompt(self.screen, "按 E / 空格 回到村庄复命")
         if self.boss_banner_timer > 0:

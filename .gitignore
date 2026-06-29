@@ -22,6 +22,8 @@ htmlcov/
 *.temp
 *.bak
 *.swp
+~$*.docx
+*.before-font-fix.docx
 
 build/
 dist/

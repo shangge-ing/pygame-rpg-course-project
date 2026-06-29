@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pygame
 
-from .settings import PLAYER_HITBOX_SIZE, PLAYER_SCALE, PLAYER_SPEED
+from ..config.settings import PLAYER_HITBOX_SIZE, PLAYER_SCALE, PLAYER_SPEED
 
 
 class Player(pygame.sprite.Sprite):

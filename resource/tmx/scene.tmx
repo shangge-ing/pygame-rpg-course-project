@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.2" tiledversion="1.2.0" orientation="orthogonal" renderorder="right-down" width="43" height="24" tilewidth="32" tileheight="32" infinite="0" nextlayerid="5" nextobjectid="1">
+<map version="1.8" tiledversion="1.8.6" orientation="orthogonal" renderorder="right-down" width="43" height="24" tilewidth="32" tileheight="32" infinite="0" nextlayerid="6" nextobjectid="48">
  <tileset firstgid="1" name="古色地图" tilewidth="32" tileheight="32" tilecount="496" columns="8">
   <image source="../img/古色地图.png" width="256" height="1984"/>
  </tileset>
@@ -117,4 +117,49 @@
 701,702,703,704,705,706,707,708,709,710,711,712,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
+ <objectgroup id="5" name="obstacle">
+  <object id="1" x="0" y="0" width="1376" height="80"/>
+  <object id="4" x="0" y="490" width="225" height="205"/>
+  <object id="5" x="-1.0511" y="5.25552" width="92.4971" height="149.257"/>
+  <object id="6" x="92.4971" y="0" width="131.388" height="192.352"/>
+  <object id="7" x="224.936" y="155.563" width="172.381" height="65.1684"/>
+  <object id="8" x="291.156" y="219.681"/>
+  <object id="9" x="291.156" y="219.681" width="1.0511"/>
+  <object id="10" x="289.054" y="221.783" width="140.848" height="30.482"/>
+  <object id="11" x="351.069" y="253.316" width="139.797" height="32.5842"/>
+  <object id="12" x="417.288" y="286.951" width="127.184" height="34.6864"/>
+  <object id="13" x="545.523" y="285.9" width="158.717" height="66.2195"/>
+  <object id="14" x="608.589" y="355.273" width="177.637" height="30.482"/>
+  <object id="15" x="700.035" y="288.002" width="89.3438" height="58.8618"/>
+  <object id="16" x="786.226" y="281.696" width="1.0511" height="3.15331"/>
+  <object id="17" x="788.328" y="286.951" width="66.2195" height="80.935"/>
+  <object id="18" x="788.328" y="371.04" width="167.126" height="107.213"/>
+  <object id="19" x="646.429" y="391.011" width="136.643" height="85.1394"/>
+  <object id="20" x="611.742" y="389.96" width="30.482" height="54.6574"/>
+  <object id="21" x="855.599" y="292.207" width="165.023" height="57.8107"/>
+  <object id="22" x="961.76" y="357.375" width="23.1243" height="84.0883"/>
+  <object id="23" x="955.453" y="84.0883" width="63.0662" height="206.016"/>
+  <object id="24" x="1027.98" y="87.2416" width="24.1754" height="166.074"/>
+  <object id="25" x="1050.05" y="84.0883" width="34.6864" height="104.059"/>
+  <object id="26" x="1096.3" y="79.8839" width="220.732" height="74.6284"/>
+  <object id="27" x="1220.33" y="158.717" width="96.7016" height="27.3287"/>
+  <object id="28" x="1253.97" y="195.505" width="105.11" height="87.2416"/>
+  <object id="29" x="11.5621" y="387.857" width="88.2927" height="99.8549"/>
+  <object id="30" x="100.906" y="415.186" width="28.3798" height="70.424"/>
+  <object id="31" x="131.388" y="447.77" width="27.3287" height="43.0953"/>
+  <object id="32" x="65.1684" y="355.273" width="27.3287" height="30.482"/>
+  <object id="33" x="1117.32" y="606.487" width="132.439" height="153.461"/>
+  <object id="35" x="224.936" y="513.99"/>
+  <object id="36" x="224.936" y="512.939" width="58.8618" height="251.214"/>
+  <object id="37" x="280.645" y="545.523" width="37.8397" height="209.17"/>
+  <object id="38" x="321.638" y="576.005" width="28.3798" height="188.148"/>
+  <object id="39" x="354.222" y="638.02" width="378.397" height="122.979"/>
+  <object id="40" x="415.186" y="609.64" width="63.0662" height="28.3798"/>
+  <object id="41" x="540.267" y="610.691" width="68.3217" height="26.2776"/>
+  <object id="42" x="671.655" y="608.589" width="58.8618" height="29.4309"/>
+  <object id="43" x="735.773" y="697.933" width="31.5331" height="64.1173"/>
+  <object id="44" x="1087.89" y="642.224" width="27.3287" height="120.877"/>
+  <object id="45" x="1221.38" y="576.005" width="150.308" height="33.6353"/>
+  <object id="46" x="1321.24" y="84.0883" width="50.453" height="201.812"/>
+ </objectgroup>
 </map>

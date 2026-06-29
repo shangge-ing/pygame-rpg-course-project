@@ -124,4 +124,15 @@ project-root/
 
 ## 开发说明
 
-本项目是一个轻量级 Pygame RPG 示例，代码按功能拆分在 `src/` 目录下。核心流程由 `src/game.py` 统一调度，地图和对象信息来自 Tiled `.tmx` 文件，角色、怪物和 UI 都基于 Pygame Surface 绘制。
+本项目是一个轻量级 Pygame RPG 示例，代码按照概要设计中的分层结构组织在 `src/` 目录下：
+
+- `src/core/`：入口调度层，包含 `Game` 主控制器和 `GameState` 状态枚举。
+- `src/config/`：配置与资源层，集中保存地图、图片、音频路径和核心数值。
+- `src/world/`：地图与场景层，负责 TMX 地图加载、对象层解析和场景对象组织。
+- `src/character/`：玩家与摄像机层，负责孙悟空移动、碰撞和镜头跟随。
+- `src/story/`：NPC 与剧情层，负责 NPC、对话框和主线任务状态。
+- `src/combat/`：怪物与战斗层，负责小怪、Boss、战斗流程和胜负判定。
+- `src/presentation/`：表现层，负责 UI、音频和通用帧动画。
+- `src/tools/`：辅助工具脚本，例如孙悟空动作帧预览图生成。
+
+核心流程由 `src/core/game.py` 统一调度，地图和对象信息来自 Tiled `.tmx` 文件，角色、怪物和 UI 都基于 Pygame Surface 绘制。

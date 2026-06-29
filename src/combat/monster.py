@@ -3,8 +3,8 @@ import random
 
 import pygame
 
-from .animation import Animation
-from .settings import (
+from ..presentation.animation import Animation
+from ..config.settings import (
     CATTLE_BACK_DIR,
     CATTLE_DIE_DIR,
     CATTLE_FIGHT_DIR,
@@ -47,6 +47,13 @@ class Monster:
     STATE_ALIASES = {
         "station": "idle",
     }
+    DIRECTION_PREFIXES = {
+        "down": "000",
+        "left": "010",
+        "up": "020",
+        "right": "030",
+    }
+    DIRECTION_ORDER = ("down", "left", "up", "right")
 
     def __init__(self, object_name, x, y, width, height, scale=MONSTER_SCALE):
         """根据 TMX monster 对象创建怪物，x/y/width/height 来自地图对象层。"""
@@ -64,13 +71,15 @@ class Monster:
         self.disappear_error = None
         self.animation_errors = {}
         self.state = "idle"
+        self.facing = "down"
         self.hitbox = pygame.Rect(
             round(x),
             round(y),
             max(1, round(width)),
             max(1, round(height)),
         )
-        self.animations = self._load_animations()
+        self.animation_sets = self._load_animations()
+        self.animations = self._animations_for_facing(self.facing)
         self.disappear_animation = self._load_disappear_animation()
         self.image = self.animations[self.state].current_frame
         self.rect = self.image.get_rect(midbottom=self.hitbox.midbottom)
@@ -84,7 +93,7 @@ class Monster:
         self.move_dir = pygame.Vector2(1, 0)
 
     def _load_animations(self):
-        """加载 cattle 各目录的动画，并为缺失目录准备回退帧。"""
+        """按方向加载 cattle 各目录动画，并为缺失状态准备回退帧。"""
         frame_sources = {
             "idle": CATTLE_STATION_DIR,
             "look": CATTLE_LOOK_DIR,
@@ -96,44 +105,53 @@ class Monster:
             "die": CATTLE_DIE_DIR,
         }
         loaded_frames = {
-            state: self._load_frames(state, directory, MONSTER_ANIMATION_FRAME_LIMIT)
+            state: self._load_directional_frames(state, directory, MONSTER_ANIMATION_FRAME_LIMIT)
             for state, directory in frame_sources.items()
         }
 
-        fallback = (
-            loaded_frames.get("idle")
-            or loaded_frames.get("fight")
-            or next((frames for frames in loaded_frames.values() if frames), None)
-            or [self._placeholder_image()]
-        )
-        if fallback[0].get_size() == (56, 64):
+        any_loaded_frames = [
+            frames
+            for state_frames in loaded_frames.values()
+            for frames in state_frames.values()
+            if frames
+        ]
+        placeholder = [self._placeholder_image()]
+        if not any_loaded_frames:
             self.load_error = "no cattle animation frames could be loaded"
 
-        fallbacks = {
-            "idle": fallback,
-            "look": loaded_frames.get("idle") or fallback,
-            "walk": loaded_frames.get("idle") or fallback,
-            "walk_alt": loaded_frames.get("walk") or loaded_frames.get("idle") or fallback,
-            "run": loaded_frames.get("walk") or loaded_frames.get("idle") or fallback,
-            "back": loaded_frames.get("idle") or fallback,
-            "fight": loaded_frames.get("idle") or fallback,
-            "die": loaded_frames.get("fight") or loaded_frames.get("idle") or fallback,
-        }
+        animation_sets = {}
+        for direction in self.DIRECTION_ORDER:
+            animation_sets[direction] = {}
+            for state in frame_sources:
+                frames = self._frames_for_state_direction(
+                    loaded_frames,
+                    state,
+                    direction,
+                    any_loaded_frames[0] if any_loaded_frames else placeholder,
+                )
+                animation_sets[direction][state] = Animation(
+                    frames,
+                    MONSTER_ANIMATION_FRAME_TIME,
+                    loop=(state != "die"),
+                )
+        return animation_sets
 
-        animations = {}
-        for state, frames in loaded_frames.items():
-            state_frames = frames or fallbacks[state]
-            animations[state] = Animation(
-                state_frames,
-                MONSTER_ANIMATION_FRAME_TIME,
-                loop=(state != "die"),
+    def _load_directional_frames(self, state, directory, limit):
+        """从指定目录按四个方向分别加载帧。"""
+        frames_by_direction = {}
+        for direction in self.DIRECTION_ORDER:
+            frames = self._load_frame_paths(
+                state,
+                direction,
+                self._direction_paths(directory, direction)[:limit],
             )
-        return animations
+            if frames:
+                frames_by_direction[direction] = frames
+        return frames_by_direction
 
-    def _load_frames(self, state, directory, limit):
-        """从指定目录加载某个动画状态的帧，并按缩放比例调整尺寸。"""
+    def _load_frame_paths(self, state, direction, paths):
+        """加载一组帧并按怪物缩放比例调整尺寸。"""
         frames = []
-        paths = self._default_direction_paths(directory)[:limit]
         for path in paths:
             try:
                 image = pygame.image.load(path).convert_alpha()
@@ -143,8 +161,48 @@ class Monster:
                     image = pygame.transform.smoothscale(image, (width, height))
                 frames.append(image)
             except Exception as exc:
-                self.animation_errors[state] = str(exc)
+                self.animation_errors[f"{state}:{direction}"] = str(exc)
         return frames
+
+    def _frames_for_state_direction(self, loaded_frames, state, direction, global_fallback):
+        """获取某状态某方向的帧；缺失时按状态和默认方向逐级回退。"""
+        state_order = (state, *self._state_fallback_order(state))
+        direction_order = (direction, "down", "left", "right", "up")
+
+        for candidate_state in state_order:
+            directional_frames = loaded_frames.get(candidate_state, {})
+            for candidate_direction in direction_order:
+                frames = directional_frames.get(candidate_direction)
+                if frames:
+                    if state == "idle":
+                        return frames[:1]
+                    return frames
+        return global_fallback
+
+    def _state_fallback_order(self, state):
+        """不同状态缺帧时的替代顺序，保证素材不完整也能继续运行。"""
+        fallbacks = {
+            "idle": ("fight",),
+            "look": ("idle",),
+            "walk": ("walk_alt", "idle"),
+            "walk_alt": ("walk", "idle"),
+            "run": ("walk", "walk_alt", "idle"),
+            "back": ("walk", "idle"),
+            "fight": ("idle",),
+            "die": ("fight", "idle"),
+        }
+        return fallbacks.get(state, ("idle",))
+
+    def _direction_paths(self, directory, direction):
+        """按 cattle 文件名中的 000/010/020/030 前缀选出对应方向帧。"""
+        paths = sorted(directory.glob("*.tga"))
+        prefix = self.DIRECTION_PREFIXES.get(direction)
+        if not prefix:
+            return []
+        return [
+            path for path in paths
+            if path.stem.rsplit("-", 1)[-1].startswith(prefix)
+        ]
 
     def _default_direction_paths(self, directory):
         """优先选择默认方向帧；如果没有方向规律，就使用目录内全部帧。"""
@@ -154,6 +212,14 @@ class Monster:
             if path.stem.rsplit("-", 1)[-1].startswith("000")
         ]
         return default_paths or paths
+
+    def _animations_for_facing(self, direction):
+        """返回某个朝向的动画组；缺失时退回默认方向。"""
+        return (
+            self.animation_sets.get(direction)
+            or self.animation_sets.get("down")
+            or next(iter(self.animation_sets.values()))
+        )
 
     def _placeholder_image(self):
         """怪物素材加载失败时使用占位图，保证流程仍可演示。"""
@@ -215,6 +281,29 @@ class Monster:
         self.animations[self.state].reset()
         self._sync_image()
 
+    def set_facing(self, direction):
+        """公开的朝向切换接口，供战斗界面把怪物转向孙悟空。"""
+        self._set_facing(direction)
+
+    def _set_facing(self, direction):
+        """切换当前方向动画组，碰撞盒和世界坐标保持不变。"""
+        if direction not in self.DIRECTION_PREFIXES or direction == self.facing:
+            return
+
+        self.facing = direction
+        self.animations = self._animations_for_facing(direction)
+        self._sync_image()
+
+    def _set_facing_from_motion(self, motion):
+        """根据移动向量选择最接近的牛怪朝向。"""
+        if motion.length_squared() == 0:
+            return
+
+        if abs(motion.x) >= abs(motion.y):
+            self._set_facing("right" if motion.x > 0 else "left")
+        else:
+            self._set_facing("down" if motion.y > 0 else "up")
+
     def update_exploration(self, dt, player_hitbox=None, obstacle_rects=(), map_size=None):
         """探索状态下更新怪物简单 AI：巡逻、警戒、追击或回家。"""
         if self.defeated:
@@ -269,13 +358,14 @@ class Monster:
         self.set_state("walk")
 
         if blocked:
-            self._pick_patrol_direction()
+            self._begin_patrol_pause()
         elif self.ai_timer <= 0:
             self._begin_patrol_pause()
 
     def _update_alert(self, dt, player_hitbox, obstacle_rects, map_size):
         """玩家靠近时向玩家方向移动，表现为警戒/追击。"""
         to_player = pygame.Vector2(player_hitbox.center) - self.pos
+        self._set_facing_from_motion(to_player)
         if to_player.length() > 1:
             step = to_player.normalize() * MONSTER_CHASE_SPEED * dt
             self._try_move(step.x, step.y, obstacle_rects, map_size)
@@ -305,6 +395,7 @@ class Monster:
     def _begin_patrol_pause(self):
         """进入巡逻停顿阶段。"""
         self.ai_phase = "pause"
+        self.set_state("idle")
         self.ai_timer = random.uniform(
             MONSTER_PATROL_PAUSE_TIME * 0.6,
             MONSTER_PATROL_PAUSE_TIME * 1.4,
@@ -318,6 +409,7 @@ class Monster:
     def _try_move(self, dx, dy, obstacle_rects, map_size):
         """按 X/Y 方向尝试移动怪物，撞到障碍物或地图边界就回退。"""
         blocked = False
+        moved = pygame.Vector2(0, 0)
         if dx:
             self.pos.x += dx
             self.hitbox.centerx = round(self.pos.x)
@@ -325,6 +417,8 @@ class Monster:
                 self.pos.x -= dx
                 self.hitbox.centerx = round(self.pos.x)
                 blocked = True
+            else:
+                moved.x = dx
         if dy:
             self.pos.y += dy
             self.hitbox.centery = round(self.pos.y)
@@ -332,6 +426,9 @@ class Monster:
                 self.pos.y -= dy
                 self.hitbox.centery = round(self.pos.y)
                 blocked = True
+            else:
+                moved.y = dy
+        self._set_facing_from_motion(moved)
         return blocked
 
     def _blocked(self, obstacle_rects, map_size):

@@ -1,5 +1,5 @@
 from .monster import Monster
-from .settings import (
+from ..config.settings import (
     BOSS_ATTACK_COOLDOWN,
     BOSS_ATTACK_DAMAGE,
     BOSS_ENRAGE_HEALTH_RATIO,

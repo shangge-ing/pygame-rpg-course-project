@@ -1,8 +1,9 @@
 import pygame
 
-from .animation import Animation
-from .settings import (
+from ..presentation.animation import Animation
+from ..config.settings import (
     CHILD_DIR,
+    CHILD_IMAGE_NAME_MARKER,
     CHILD_SPRITE_HEIGHT,
     ELDER_DIR,
     GOD_DIR,
@@ -151,12 +152,7 @@ class NPC:
                 return path
 
         if self.layer_name == "child":
-            child_paths = sorted(
-                path
-                for pattern in ("*.png", "*.jpg", "*.jpeg", "*.tga")
-                for path in CHILD_DIR.glob(pattern)
-                if path.is_file()
-            )
+            child_paths = self._child_image_paths()
             if not child_paths:
                 return None
             try:
@@ -166,6 +162,19 @@ class NPC:
             return child_paths[index % len(child_paths)]
 
         return None
+
+    def _child_image_paths(self):
+        """优先使用新加入的一批孩童图片，找不到时再退回全部 child 素材。"""
+        all_paths = sorted(
+            path
+            for pattern in ("*.png", "*.jpg", "*.jpeg", "*.tga")
+            for path in CHILD_DIR.glob(pattern)
+            if path.is_file()
+        )
+        preferred_paths = [path for path in all_paths if CHILD_IMAGE_NAME_MARKER in path.name]
+        if len(preferred_paths) >= len(self.CHILD_IMAGE_ORDER):
+            return preferred_paths
+        return all_paths
 
     def _prepare_child_sprite(self, image):
         """Remove the generated checkerboard background, crop blank space, and scale."""

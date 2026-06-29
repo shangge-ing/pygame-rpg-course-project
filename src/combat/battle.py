@@ -7,8 +7,8 @@ Battle 是一个覆盖在当前地图上的回合制战斗状态。它负责玩�
 
 import pygame
 
-from .animation import Animation
-from .settings import (
+from ..presentation.animation import Animation
+from ..config.settings import (
     BATTLE_EFFECT_FRAME_LIMIT,
     BATTLE_EFFECT_FRAME_TIME,
     BATTLE_HIT_FLASH_TIME,
@@ -72,6 +72,7 @@ class Battle:
         self.title_font = self._load_font(font_path, 34)
         self.text_font = self._load_font(font_path, 23)
         self.small_font = self._load_font(font_path, 20)
+        self.monster.set_facing("left")
         self.monster.set_state("fight")
         self._add_log(f"遭遇{self.monster.title}，进入玩家回合。")
 
@@ -242,6 +243,7 @@ class Battle:
         """怪物自动攻击玩家，并根据防御状态计算伤害。"""
         self.phase = ENEMY_ATTACKING
         self.phase_timer = 0.65
+        self.monster.set_facing("left")
         self.monster.set_state("fight")
         swing = self.monster.animations.get(self.monster.state)
         if swing:

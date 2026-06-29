@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pygame
 
-from .settings import BASE_DIR, SWK2_DIR
+from ..config.settings import BASE_DIR, SWK2_DIR
 
 
 """孙悟空 swk2 动作帧预览图生成脚本。

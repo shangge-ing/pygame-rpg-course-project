@@ -2,12 +2,14 @@ from collections import deque
 
 import pygame
 
-from .monster import Monster
-from .npc import NPC
-from .settings import (
+from ..combat.monster import Monster
+from ..story.npc import NPC
+from ..config.settings import (
     MONSTER_LAYERS,
     NPC_INTERACTION_PADDING,
     NPC_LAYERS,
+    FOREST_NPC_SPAWNS,
+    OUTSKIRTS_NPC_SPAWNS,
     PLAYER_HITBOX_SIZE,
 )
 from .tmx_map import TmxMap
@@ -23,7 +25,7 @@ Scene 把一张地图和它上面的 NPC、怪物、Boss、出生点组织在一
 class Scene:
     """一个可探索场景，例如村庄、郊外、森林或寺庙。"""
 
-    def __init__(self, name, map_path, default_spawn, npc_layers=(), monster_layers=()):
+    def __init__(self, name, map_path, default_spawn, npc_layers=(), monster_layers=(), extra_npcs=()):
         """加载地图、读取玩家出生点，并按对象层创建 NPC 和怪物。"""
         self.name = name
         self.map_path = map_path
@@ -34,6 +36,7 @@ class Scene:
             default_spawn,
         )
         self.npcs = self._load_npcs(npc_layers)
+        self.npcs.extend(self._load_extra_npcs(extra_npcs))
         self._ensure_npcs_reachable()
         self.monsters = self._load_monsters(monster_layers)
         self.boss = None
@@ -49,13 +52,13 @@ class Scene:
     def outskirts(cls, map_path, default_spawn):
         """创建郊外过渡场景：用于村庄和森林之间的连接。"""
         # 原郊外场景：scene.tmx 使用瓦片地图，作为村庄和森林之间的连接。
-        return cls("outskirts", map_path, default_spawn)
+        return cls("outskirts", map_path, default_spawn, extra_npcs=OUTSKIRTS_NPC_SPAWNS)
 
     @classmethod
     def forest(cls, map_path, default_spawn):
         """创建森林过渡场景：位于郊外和寺庙之间。"""
         # 新森林场景：forest.tmx 使用郊外.jpg 整图背景，整图可走。
-        return cls("forest", map_path, default_spawn)
+        return cls("forest", map_path, default_spawn, extra_npcs=FOREST_NPC_SPAWNS)
 
     @classmethod
     def temple(cls, map_path, default_spawn):
@@ -73,6 +76,13 @@ class Scene:
                     (obj["x"], obj["y"]),
                 )
             )
+        return npcs
+
+    def _load_extra_npcs(self, extra_npcs):
+        """创建代码配置的场景 NPC，用于没有 NPC 对象层的过渡地图。"""
+        npcs = []
+        for layer_name, object_name, position in extra_npcs:
+            npcs.append(NPC(layer_name, object_name, position))
         return npcs
 
     _REACH_CELL = 16

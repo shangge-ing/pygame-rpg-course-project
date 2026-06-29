@@ -1,7 +1,7 @@
 """早期 Tiled 地图渲染辅助。
 
 smoke_test.py 使用这个类快速验证 .tmx 地图能否被 Pygame 显示。
-正式游戏后续改为使用 src/tmx_map.py，但这个文件仍可作为地图排错工具。
+正式游戏后续改为使用 src/world/tmx_map.py，但这个文件仍可作为地图排错工具。
 """
 
 import pygame

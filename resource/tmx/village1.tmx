@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.8" tiledversion="1.8.6" orientation="orthogonal" renderorder="right-down" width="1" height="1" tilewidth="3780" tileheight="2395" infinite="0" nextlayerid="10" nextobjectid="249">
+<map version="1.8" tiledversion="1.8.6" orientation="orthogonal" renderorder="right-down" width="1" height="1" tilewidth="3780" tileheight="2395" infinite="0" nextlayerid="10" nextobjectid="261">
  <tileset firstgid="1" name="village" tilewidth="3780" tileheight="2395" tilecount="1" columns="1">
   <image source="../img/village.jpg" width="3780" height="2395"/>
  </tileset>
@@ -20,7 +20,7 @@
    <point/>
   </object>
  </objectgroup>
- <objectgroup id="9" name="obstacle" locked="1">
+ <objectgroup id="9" name="obstacle">
   <object id="31" x="324" y="487" width="52" height="132"/>
   <object id="33" x="268" y="628" width="76" height="104"/>
   <object id="34" x="312" y="768" width="120" height="108"/>
@@ -199,6 +199,30 @@
   <object id="245" x="548" y="2" width="257" height="49"/>
   <object id="246" x="950" y="6" width="232" height="85"/>
   <object id="248" x="1777" y="1919" width="290" height="75"/>
+  <object id="250" x="461" y="213" width="57" height="19">
+   <ellipse/>
+  </object>
+  <object id="254" x="512" y="273" width="67" height="44">
+   <ellipse/>
+  </object>
+  <object id="255" x="693" y="313">
+   <ellipse/>
+  </object>
+  <object id="256" x="482" y="289" width="17" height="72">
+   <ellipse/>
+  </object>
+  <object id="257" x="467" y="309" width="23" height="71">
+   <ellipse/>
+  </object>
+  <object id="258" x="501" y="292" width="15" height="40">
+   <ellipse/>
+  </object>
+  <object id="259" x="607" y="332" width="41" height="54">
+   <ellipse/>
+  </object>
+  <object id="260" x="583" y="297" width="33" height="37">
+   <ellipse/>
+  </object>
  </objectgroup>
  <objectgroup id="4" name="actor">
   <object id="18" name="sun" x="2726.78" y="496.664">

@@ -8,7 +8,7 @@ from pathlib import Path
 """
 
 # 项目根目录和资源根目录。
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parents[2]
 RESOURCE_DIR = BASE_DIR / "resource"
 
 # 四张主要地图：村庄、郊外、森林、寺庙。TEMPLE_FALLBACK_MAP_PATH 是寺庙备用地图。
@@ -37,6 +37,7 @@ CATTLE_DIE_DIR = RESOURCE_DIR / "img" / "cattle" / "die"
 MAGIC_APPEAR_DIR = RESOURCE_DIR / "img" / "magic" / "appear"
 MAGIC_DISAPPEAR_DIR = RESOURCE_DIR / "img" / "magic" / "disappear"
 DIALOG_IMAGE_PATH = RESOURCE_DIR / "img" / "dialog" / "dialog.png"
+GOD_DIALOG_PORTRAIT_PATH = RESOURCE_DIR / "img" / "god" / "1703-f9cc9fcf-00000.tga"
 START_BACKGROUND_PATH = RESOURCE_DIR / "img" / "pic.jpg"
 OK_BUTTON_PATH = RESOURCE_DIR / "img" / "button" / "ok.png"
 NO_BUTTON_PATH = RESOURCE_DIR / "img" / "button" / "no.png"
@@ -62,8 +63,9 @@ PLAYER_SPEED = 220
 PLAYER_SCALE = 0.5
 PLAYER_HITBOX_SIZE = (32, 28)
 DEFAULT_PLAYER_SPAWN = (400, 300)
-DEFAULT_OUTSKIRTS_SPAWN = (96, 384)
+DEFAULT_OUTSKIRTS_SPAWN = (60, 300)
 DEFAULT_FOREST_SPAWN = (96, 384)
+FOREST_RETURN_FROM_TEMPLE_SPAWN = (735, 125)
 OUTSKIRTS_EXIT_BAND = 96
 DEFAULT_TEMPLE_SPAWN = (300, 900)
 
@@ -73,8 +75,18 @@ NPC_LAYERS = ("god", "elder", "child")
 NPC_IDLE_FRAME_LIMIT = 10
 NPC_IDLE_FRAME_TIME = 0.2
 CHILD_SPRITE_HEIGHT = 72
+CHILD_IMAGE_NAME_MARKER = "23_17_58"
 GOD_PATROL_RADIUS = 36
 GOD_PATROL_SPEED = 24
+OUTSKIRTS_NPC_SPAWNS = (
+    ("elder", "elder1", (420, 430)),
+    ("child", "boy1", (250, 520)),
+)
+FOREST_NPC_SPAWNS = (
+    ("elder", "elder3", (230, 350)),
+    ("child", "girl1", (150, 430)),
+    ("child", "boy2", (780, 300)),
+)
 
 # 怪物探索状态、巡逻、追击和动画参数。
 MONSTER_LAYERS = ("monster",)
@@ -117,7 +129,7 @@ BOSS_ENRAGE_HEALTH_RATIO = 0.5
 BOSS_BANNER_SECONDS = 2.2
 
 # 动画帧率、特效时长和音量。
-MONSTER_ANIMATION_FRAME_LIMIT = 8
+MONSTER_ANIMATION_FRAME_LIMIT = 10
 MONSTER_ANIMATION_FRAME_TIME = 0.12
 BATTLE_EFFECT_FRAME_LIMIT = 8
 BATTLE_EFFECT_FRAME_TIME = 0.06
